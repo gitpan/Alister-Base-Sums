@@ -11,9 +11,8 @@ identifier (of the main data of interest).
 
 This is a stand-alone module which lets you:
 
-   Create and manage a 'sums' table in a database to track a collection of unique sum digests.
-
-   It is by itself not OO, but meant to be perhaps used to implement this in OO fashion.
+   -Create and manage a 'sums' table in a database to track a collection of unique sum digests.
+   -It is by itself not OO, but meant to be perhaps used to implement this in OO fashion.
 
 This package does not include features on interacting with the filesystem, this is out of scope.
 For good reasons. To isolate the problems.
@@ -64,7 +63,7 @@ Second argument is either 'sum' or 'id'. If argument is sum, returns id, if is i
 On fail, returns undef.
 
 If you do not pass any argument as dbh and sum, will throw an exception.
-   
+
    sum_get($dbh, 5);
    sum_get($dbh, '4446d445d6fc77b0b8d12e5e0e5da6f5');
 
@@ -88,7 +87,7 @@ If this returns true, it's because you tried to update to a sum that already exi
       # already there?
       my $id = sum_get($newsum);
       warn("Already exists with id $newsum.");
-
+      
       # maybe delete old one?
       sum_delete( $dbh, $oldsum );
    }
@@ -123,8 +122,6 @@ By default:
 
 Obviously if you chose to override validate_sum() for use with some other digest algorythm, 
 this needs to be altered.
-
-
 
 
 =head1 TERMINOLOGY
@@ -173,45 +170,3 @@ This package is distributed in the hope that it will be useful, but WITHOUT ANY 
 See the "GNU General Public License" for more details.
 
 =cut
-
-
-
-=pod
-
-
-
-   my $sum = new Sums;
-
-   
-
-   my $sum_id = 
-      $sum->add( 'adfasdfasdfasfdadf' );
-
-   my $sum_id = 
-      $sum->get( 'adfasdfasdfasfdadf' );
-
-   my $sum = 
-      $sum->get( 5 );
-
-   $sum->delete( 'adfasdfasdfasfdadf' );
-   $sum->delete( 5 );
-
-
-
-
-=head2 add()  
-
-Argument is sum. 
-Returns id. 
-
-=head2 delete()
-
-Argument is id or sum.
-Returns bool.
-
-=head2 get()
-
-If argument is sum, returns id. 
-If argument is id, returns sum.
-
-

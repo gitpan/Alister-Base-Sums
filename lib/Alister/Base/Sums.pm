@@ -4,7 +4,7 @@ use vars qw($VERSION $TABLE_NAME $SQL_LAYOUT @ISA @EXPORT_OK %EXPORT_TAGS $sth1 
 use Exporter;
 use LEOCHARRE::Debug;
 use Carp;
-$VERSION = sprintf "%d.%02d", q$Revision: 1.2 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.3 $ =~ /(\d+)/g;
 @EXPORT_OK = qw/sum_add sum_update sum_get sum_delete validate_argument_sum validate_argument_id table_reset_sums/;
 %EXPORT_TAGS = ( all => \@EXPORT_OK );
 @ISA = qw/Exporter/;
@@ -104,7 +104,6 @@ sub _sum_add_original {
    my $sum = validate_argument_sum($_[1]) 
       or warn("Argument 2 to sum_add() must be a sum digest string")
       and return;
-
 
 
    # NOTE do NOT use REPLACE INTO, that works but it changes the sum_id
