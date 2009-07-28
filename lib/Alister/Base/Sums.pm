@@ -1,10 +1,10 @@
 package Alister::Base::Sums;
 use strict;
-use vars qw($VERSION $TABLE_NAME $SQL_LAYOUT @ISA @EXPORT_OK %EXPORT_TAGS $sth1 $sth0);
+use vars qw($VERSION $TABLE_NAME $SQL_LAYOUT @ISA @EXPORT_OK %EXPORT_TAGS); #$sth1 $sth0
 use Exporter;
 use LEOCHARRE::Debug;
 use Carp;
-$VERSION = sprintf "%d.%02d", q$Revision: 1.3 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.5 $ =~ /(\d+)/g;
 @EXPORT_OK = qw/sum_add sum_update sum_get sum_delete validate_argument_sum validate_argument_id table_reset_sums/;
 %EXPORT_TAGS = ( all => \@EXPORT_OK );
 @ISA = qw/Exporter/;
@@ -16,8 +16,6 @@ $SQL_LAYOUT ="CREATE TABLE $TABLE_NAME (
 
 sub table_create_sums { _dbh_do_sql_layout( $_[0], $SQL_LAYOUT ) }
 sub table_reset_sums { $_[0]->do("DROP TABLE IF EXISTS $TABLE_NAME"); table_create_sums($_[0]) }
-
-
 
 
 sub _dbh_do_sql_layout {
@@ -45,59 +43,6 @@ sub _dbh_do_sql_layout {
 *sum_add = \&_sum_add_original;
 
 
-=pod
-sub _sum_add_mod { # slightly faster, might not be worth the code maintenance
-   my $dbh = $_[0];
-   my $sum = validate_argument_sum($_[1]) 
-      or warn("Argument 2 to sum_add() must be a sum digest string")
-      and return;
-
-
-
-   # NOTE do NOT use REPLACE INTO, that works but it changes the sum_id
-   # which is the whole keystone of this whole operation!
-   #my $sth = $dbh->prepare("INSERT INTO $TABLE_NAME (sum) VALUES (?)")
-   #   or confess($dbh->errstr);
-   $sth0 ||= $dbh->prepare("INSERT INTO $TABLE_NAME (sum) VALUES (?)")
-      or confess($dbh->errstr);
-
-   local $sth0->{RaiseError}; # stop dying if insert fails
-   local $sth0->{PrintError}; # stop telling if insert fails
-
-   my $result = $sth0->execute($sum);
-   $sth0->finish;
-
-
-   if (!defined $result){ # then already in.. likely
-      
-      $sth1 ||= $dbh->prepare("SELECT id FROM $TABLE_NAME WHERE sum = ?");
-      my $r = $sth1->execute($sum);
-      
-
-
-      if ($r eq '0E0'){ # would mean no results
-         $sth1->finish;
-         die("Could not insert sum:'$sum', and could not fetch either! Something is wrong.");
-         
-      }
-      else {
-         my $val =$sth1->fetch->[0];
-         $sth1->finish;
-         return $val
-      }
-
-   }
-
-   
-   ($result eq '0E0')
-      and confess("could not register sum:'$sum',".$dbh->errstr);
-   
-   defined wantarray 
-      ? ( $dbh->last_insert_id( undef, undef, $TABLE_NAME, undef )
-         || confess("can't get last insert id for sum table") )
-      : 1;
-}
-=cut
 
 sub _sum_add_original {
    my $dbh = $_[0];
@@ -222,4 +167,59 @@ sub _dbh_fetch_one {
 
 1;
 
+__END__
+
 # see lib/Alister/Base/Sums.pod
+
+sub _sum_add_mod { # slightly faster, might not be worth the code maintenance
+   my $dbh = $_[0];
+   my $sum = validate_argument_sum($_[1]) 
+      or warn("Argument 2 to sum_add() must be a sum digest string")
+      and return;
+
+
+
+   # NOTE do NOT use REPLACE INTO, that works but it changes the sum_id
+   # which is the whole keystone of this whole operation!
+   #my $sth = $dbh->prepare("INSERT INTO $TABLE_NAME (sum) VALUES (?)")
+   #   or confess($dbh->errstr);
+   $sth0 ||= $dbh->prepare("INSERT INTO $TABLE_NAME (sum) VALUES (?)")
+      or confess($dbh->errstr);
+
+   local $sth0->{RaiseError}; # stop dying if insert fails
+   local $sth0->{PrintError}; # stop telling if insert fails
+
+   my $result = $sth0->execute($sum);
+   $sth0->finish;
+
+
+   if (!defined $result){ # then already in.. likely
+      
+      $sth1 ||= $dbh->prepare("SELECT id FROM $TABLE_NAME WHERE sum = ?");
+      my $r = $sth1->execute($sum);
+      
+
+
+      if ($r eq '0E0'){ # would mean no results
+         $sth1->finish;
+         die("Could not insert sum:'$sum', and could not fetch either! Something is wrong.");
+         
+      }
+      else {
+         my $val =$sth1->fetch->[0];
+         $sth1->finish;
+         return $val
+      }
+
+   }
+
+   
+   ($result eq '0E0')
+      and confess("could not register sum:'$sum',".$dbh->errstr);
+   
+   defined wantarray 
+      ? ( $dbh->last_insert_id( undef, undef, $TABLE_NAME, undef )
+         || confess("can't get last insert id for sum table") )
+      : 1;
+}
+

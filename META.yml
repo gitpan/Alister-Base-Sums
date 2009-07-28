@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Alister-Base-Sums
-version:            1.03
+version:            1.05
 abstract:           subroutines for managing a sum disgest database table
 author:
     - Leo Charre leocharre at cpan dot org
